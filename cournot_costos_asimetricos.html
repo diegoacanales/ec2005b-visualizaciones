@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cournot con costos asimétricos</title>
+<style>
+  :root { --azul:#1F4E79; --rojo:#B22222; --gris:#555; }
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; margin: 0; background: #f7f7f5; color: #222; }
+  header { background: var(--azul); color: white; padding: 12px 24px; }
+  header h1 { margin: 0; font-size: 20px; font-weight: 600; }
+  header p { margin: 4px 0 0; font-size: 13px; opacity: .85; }
+  main { display: grid; grid-template-columns: 300px 1fr; gap: 18px; padding: 18px 24px; }
+  .panel { background: white; border: 1px solid #ddd; border-radius: 8px; padding: 14px 16px; }
+  .ctrl { margin-bottom: 14px; }
+  .ctrl label { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 4px; }
+  .ctrl label b { font-variant-numeric: tabular-nums; }
+  input[type=range] { width: 100%; }
+  .presets button { font-size: 12px; margin: 0 4px 6px 0; padding: 4px 8px; border: 1px solid #bbb; background: #fafafa; border-radius: 4px; cursor: pointer; }
+  .presets button:hover { background: #eef3f9; }
+  .check { font-size: 13px; display: block; margin: 6px 0; }
+  .graphs { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .graphs h2, .panel h2 { font-size: 15px; margin: 0 0 6px; }
+  .graphs .nota { font-size: 12px; color: var(--gris); margin: 4px 0 0; }
+  svg { width: 100%; height: auto; display: block; }
+  #caso { font-size: 16px; font-weight: 600; padding: 8px 10px; border-radius: 6px; margin-bottom: 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 13px; font-variant-numeric: tabular-nums; }
+  td, th { padding: 3px 6px; text-align: right; border-bottom: 1px solid #eee; }
+  td:first-child, th:first-child { text-align: left; }
+  #explica { font-size: 13px; line-height: 1.45; margin-top: 10px; }
+  .wide { grid-column: 1 / -1; }
+  #svgC { cursor: crosshair; }
+  @media (max-width: 1000px) { main { grid-template-columns: 1fr; } .graphs { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>Duopolio de Cournot con costos marginales asimétricos</h1>
+  <p>Demanda inversa P = a &minus; bQ, costos marginales constantes c<sub>1</sub> y c<sub>2</sub>. EC2005B Competencia Económica.</p>
+</header>
+<main>
+  <div>
+    <div class="panel">
+      <h2>Parámetros</h2>
+      <div class="ctrl"><label>Intercepto a <b id="va"></b></label><input type="range" id="a" min="10" max="100" step="1" value="30"></div>
+      <div class="ctrl"><label>Pendiente b <b id="vb"></b></label><input type="range" id="b" min="0.5" max="3" step="0.1" value="1"></div>
+      <div class="ctrl"><label>Costo c<sub>1</sub> <b id="vc1"></b></label><input type="range" id="c1" min="0" max="75" step="0.5" value="6"></div>
+      <div class="ctrl"><label>Costo c<sub>2</sub> <b id="vc2"></b></label><input type="range" id="c2" min="0" max="75" step="0.5" value="12"></div>
+      <div class="presets">
+        <div style="font-size:13px;margin-bottom:4px">Ejemplos (con a = 30, b = 1):</div>
+        <button data-p="6,6">Simétrico (6, 6)</button>
+        <button data-p="6,12">Ambas (6, 12)</button>
+        <button data-p="6,18">Frontera (6, 18)</button>
+        <button data-p="6,20">Solo 1 (6, 20)</button>
+        <button data-p="36,60">Fuera del supuesto del libro (36, 60)</button>
+        <button data-p="40,45">Ninguna (40, 45)</button>
+      </div>
+      <label class="check"><input type="checkbox" id="libro"> Encimar las etiquetas del diagrama del libro fuera de su supuesto</label>
+      <label class="check"><input type="checkbox" id="dominio"> Mostrar el dominio del libro (a &gt; c<sub>1</sub>, c<sub>2</sub>)</label>
+      <label class="check"><input type="checkbox" id="ajuste"> Mostrar ajuste por mejores respuestas</label>
+    </div>
+    <div class="panel" style="margin-top:18px">
+      <div id="caso"></div>
+      <table id="tabla"></table>
+      <div id="explica"></div>
+    </div>
+  </div>
+  <div class="graphs">
+    <div class="panel">
+      <h2>Mejores respuestas en el plano (q<sub>1</sub>, q<sub>2</sub>)</h2>
+      <svg id="svgQ" viewBox="0 0 470 470"></svg>
+      <p class="nota">Azul: BR<sub>1</sub>(q<sub>2</sub>). Rojo: BR<sub>2</sub>(q<sub>1</sub>). El punto negro es el equilibrio de Nash.</p>
+    </div>
+    <div class="panel">
+      <h2>Regiones en el plano de costos (c<sub>1</sub>, c<sub>2</sub>)</h2>
+      <svg id="svgC" viewBox="0 0 470 470"></svg>
+      <p class="nota">Arrastre el punto o haga clic en cualquier lugar para elegir (c<sub>1</sub>, c<sub>2</sub>). Las regiones no dependen de b.</p>
+    </div>
+  </div>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+const NS = "http://www.w3.org/2000/svg";
+const PAD = 52, SIZE = 470, PLOT = SIZE - PAD - 18;
+const COL = { ambas:"#cfe0f5", solo1:"#d4efd4", solo2:"#f6d3d3", ninguna:"#dcdcdc" };
+const NOMBRE = { ambas:"Ambas empresas producen", solo1:"Solo produce la empresa 1", solo2:"Solo produce la empresa 2", ninguna:"Ninguna empresa produce" };
+
+function el(tag, attrs, parent, text) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (text !== undefined) e.textContent = text;
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function f(x, d = 2) { return Number.isFinite(x) ? String(parseFloat(x.toFixed(d))) : "n/d"; }
+function niceStep(max) { const raw = max / 5, p = Math.pow(10, Math.floor(Math.log10(raw))); const m = raw / p; return (m < 1.5 ? 1 : m < 3.5 ? 2 : m < 7.5 ? 5 : 10) * p; }
+
+function ejes(svg, xmax, ymax, xl, yl) {
+  const sx = x => PAD + x / xmax * PLOT, sy = y => SIZE - PAD - y / ymax * PLOT;
+  const g = el("g", {}, svg);
+  const st = niceStep(xmax);
+  for (let t = 0; t <= xmax + 1e-9; t += st) {
+    el("line", { x1: sx(t), y1: sy(0), x2: sx(t), y2: sy(0) + 5, stroke: "#333" }, g);
+    el("text", { x: sx(t), y: sy(0) + 18, "font-size": 11, "text-anchor": "middle", fill: "#333" }, g, f(t, 1));
+  }
+  const sty = niceStep(ymax);
+  for (let t = 0; t <= ymax + 1e-9; t += sty) {
+    el("line", { x1: sx(0) - 5, y1: sy(t), x2: sx(0), y2: sy(t), stroke: "#333" }, g);
+    el("text", { x: sx(0) - 8, y: sy(t) + 4, "font-size": 11, "text-anchor": "end", fill: "#333" }, g, f(t, 1));
+  }
+  el("line", { x1: sx(0), y1: sy(0), x2: sx(xmax), y2: sy(0), stroke: "#222", "stroke-width": 1.4 }, g);
+  el("line", { x1: sx(0), y1: sy(0), x2: sx(0), y2: sy(ymax), stroke: "#222", "stroke-width": 1.4 }, g);
+  el("text", { x: sx(xmax) - 4, y: sy(0) + 36, "font-size": 14, "text-anchor": "end", "font-style": "italic" }, g, xl);
+  el("text", { x: 14, y: sy(ymax) + 4, "font-size": 14, "font-style": "italic" }, g, yl);
+  return { sx, sy };
+}
+
+// Equilibrio con la clasificación corregida (verificada contra iteración de mejores respuestas)
+function equilibrio(a, b, c1, c2) {
+  let caso, q1, q2;
+  if (c1 >= a && c2 >= a) { caso = "ninguna"; q1 = 0; q2 = 0; }
+  else if (c1 < a && c2 >= (a + c1) / 2) { caso = "solo1"; q1 = (a - c1) / (2 * b); q2 = 0; }
+  else if (c2 < a && c1 >= (a + c2) / 2) { caso = "solo2"; q1 = 0; q2 = (a - c2) / (2 * b); }
+  else { caso = "ambas"; q1 = (a - 2 * c1 + c2) / (3 * b); q2 = (a - 2 * c2 + c1) / (3 * b); }
+  return { caso, q1, q2 };
+}
+function casoLibro(a, c1, c2) {
+  const fuera1 = c1 >= (a + c2) / 2, fuera2 = c2 >= (a + c1) / 2;
+  if (!fuera1 && !fuera2) return "ambas";
+  if (!fuera1 && fuera2) return "solo1";
+  if (fuera1 && !fuera2) return "solo2";
+  return "ninguna";
+}
+
+function leer() { return { a: +$("a").value, b: +$("b").value, c1: +$("c1").value, c2: +$("c2").value }; }
+
+function dibujarQ(p, eq) {
+  const svg = $("svgQ"); svg.innerHTML = "";
+  const { a, b, c1, c2 } = p;
+  const M = a / b;
+  const { sx, sy } = ejes(svg, M, M, "q₁", "q₂");
+  const br1 = q2 => Math.max(0, (a - c1 - b * q2) / (2 * b));
+  const br2 = q1 => Math.max(0, (a - c2 - b * q1) / (2 * b));
+  const pts1 = [], pts2 = [];
+  for (let i = 0; i <= 200; i++) { const t = M * i / 200; pts1.push(sx(br1(t)) + "," + sy(t)); pts2.push(sx(t) + "," + sy(br2(t))); }
+  el("polyline", { points: pts1.join(" "), fill: "none", stroke: "#1F4E79", "stroke-width": 3 }, svg);
+  el("polyline", { points: pts2.join(" "), fill: "none", stroke: "#B22222", "stroke-width": 3 }, svg);
+  el("text", { x: sx(br1(M * 0.85)) + 8, y: sy(M * 0.85), "font-size": 13, fill: "#1F4E79" }, svg, "BR₁");
+  el("text", { x: sx(M * 0.85), y: sy(br2(M * 0.85)) - 8, "font-size": 13, fill: "#B22222" }, svg, "BR₂");
+  if ($("ajuste").checked) {
+    let q1 = 0, q2 = 0; const path = [[0, 0]];
+    for (let k = 0; k < 12; k++) { q1 = br1(q2); path.push([q1, q2]); q2 = br2(q1); path.push([q1, q2]); }
+    el("polyline", { points: path.map(([x, y]) => sx(x) + "," + sy(y)).join(" "), fill: "none", stroke: "#e69500", "stroke-width": 1.5, "stroke-dasharray": "4 3" }, svg);
+  }
+  el("line", { x1: sx(eq.q1), y1: sy(0), x2: sx(eq.q1), y2: sy(eq.q2), stroke: "#666", "stroke-dasharray": "4 3" }, svg);
+  el("line", { x1: sx(0), y1: sy(eq.q2), x2: sx(eq.q1), y2: sy(eq.q2), stroke: "#666", "stroke-dasharray": "4 3" }, svg);
+  el("circle", { cx: sx(eq.q1), cy: sy(eq.q2), r: 6, fill: "#111" }, svg);
+  el("text", { x: sx(eq.q1) + 9, y: sy(eq.q2) - 9, "font-size": 12 }, svg, `(${f(eq.q1)}, ${f(eq.q2)})`);
+}
+
+let escalaC = null;
+function dibujarC(p, eq) {
+  const svg = $("svgC"); svg.innerHTML = "";
+  const { a, c1, c2 } = p;
+  const M = 2.5 * a;
+  const defs = el("defs", {}, svg);
+  const pat = el("pattern", { id: "rayas", width: 8, height: 8, patternUnits: "userSpaceOnUse", patternTransform: "rotate(45)" }, defs);
+  el("rect", { width: 8, height: 8, fill: "rgba(178,34,34,0.18)" }, pat);
+  el("line", { x1: 0, y1: 0, x2: 0, y2: 8, stroke: "#B22222", "stroke-width": 3 }, pat);
+  const { sx, sy } = ejes(svg, M, M, "c₁", "c₂");
+  escalaC = { sx, sy, M };
+  const poly = (pts, fill, extra = {}) => el("polygon", Object.assign({ points: pts.map(([x, y]) => sx(x) + "," + sy(y)).join(" "), fill }, extra), svg);
+  poly([[0, 0], [a / 2, 0], [a, a], [0, a / 2]], COL.ambas);
+  poly([[a / 2, 0], [M, 0], [M, a], [a, a]], COL.solo2);
+  poly([[0, a / 2], [a, a], [a, M], [0, M]], COL.solo1);
+  poly([[a, a], [M, a], [M, M], [a, M]], COL.ninguna);
+  if ($("dominio").checked) {
+    poly([[a, 0], [M, 0], [M, M], [0, M], [0, a], [a, a]], "rgba(255,255,255,0.6)");
+    el("rect", { x: sx(0), y: sy(a), width: sx(a) - sx(0), height: sy(0) - sy(a), fill: "none", stroke: "#1F4E79", "stroke-width": 3 }, svg);
+    el("text", { x: sx(a) - 4, y: sy(a) + 16, "font-size": 11, fill: "#1F4E79", "text-anchor": "end", "font-weight": 600 }, svg, "supuesto del libro: a > c₁, c₂");
+  }
+  if ($("libro").checked) {
+    poly([[a, a], [a, M], [(a + M) / 2, M]], "url(#rayas)");
+    poly([[a, a], [M, a], [M, (a + M) / 2]], "url(#rayas)");
+    el("text", { x: sx(a * 1.08), y: sy(M * 0.93), "font-size": 11, fill: "#B22222" }, svg, "fuera del supuesto; rectas: \"solo 1\"");
+    el("text", { x: sx(M * 0.97), y: sy(a * 1.12), "font-size": 11, fill: "#B22222", "text-anchor": "end" }, svg, "fuera del supuesto; rectas: \"solo 2\"");
+  }
+  el("line", { x1: sx(a / 2), y1: sy(0), x2: sx((a + M) / 2), y2: sy(M), stroke: "#222", "stroke-width": 1.6 }, svg);
+  el("line", { x1: sx(0), y1: sy(a / 2), x2: sx(M), y2: sy((a + M) / 2), stroke: "#222", "stroke-width": 1.6 }, svg);
+  el("line", { x1: sx(a), y1: sy(a), x2: sx(a), y2: sy(M), stroke: "#222", "stroke-width": 1.6, "stroke-dasharray": "6 4" }, svg);
+  el("line", { x1: sx(a), y1: sy(a), x2: sx(M), y2: sy(a), stroke: "#222", "stroke-width": 1.6, "stroke-dasharray": "6 4" }, svg);
+  el("line", { x1: sx(0), y1: sy(0), x2: sx(M), y2: sy(M), stroke: "#888", "stroke-dasharray": "2 4" }, svg);
+  const lab = (x, y, t) => el("text", { x: sx(x), y: sy(y), "font-size": 13, "text-anchor": "middle", "font-weight": 600, fill: "#333" }, svg, t);
+  lab(a * 0.33, a * 0.3, "Ambas"); lab(a * 0.45, M * 0.8, "Solo 1"); lab(M * 0.8, a * 0.45, "Solo 2"); lab(a * 1.75, a * 2.05, "Ninguna");
+  el("text", { x: sx(a * 1.5) + 4, y: sy(a * 1.85), "font-size": 11, fill: "#222" }, svg, "c₁ = (a + c₂)/2");
+  el("text", { x: sx(a * 1.75), y: sy(a * 1.375) + 16, "font-size": 11, fill: "#222" }, svg, "c₂ = (a + c₁)/2");
+  const px = Math.min(c1, M), py = Math.min(c2, M);
+  el("circle", { cx: sx(px), cy: sy(py), r: 8, fill: "#111", stroke: "white", "stroke-width": 2, id: "punto" }, svg);
+}
+
+function tabla(p, eq) {
+  const { a, b, c1, c2 } = p, Q = eq.q1 + eq.q2, P = a - b * Q;
+  const pi1 = (P - c1) * eq.q1, pi2 = (P - c2) * eq.q2;
+  const s1 = Q > 0 ? eq.q1 / Q : NaN, s2 = Q > 0 ? eq.q2 / Q : NaN;
+  const hhi = s1 * s1 + s2 * s2, eps = Q > 0 ? P / (b * Q) : NaN;
+  const L1 = eq.q1 > 0 ? (P - c1) / P : NaN, L2 = eq.q2 > 0 ? (P - c2) / P : NaN;
+  $("caso").textContent = NOMBRE[eq.caso];
+  $("caso").style.background = COL[eq.caso];
+  const filas = [
+    ["", "Empresa 1", "Empresa 2"],
+    ["Cantidad q*", f(eq.q1), f(eq.q2)],
+    ["Beneficio π*", f(eq.q1 > 0 ? pi1 : 0), f(eq.q2 > 0 ? pi2 : 0)],
+    ["Participación s", f(s1, 3), f(s2, 3)],
+    ["Lerner (P − c)/P", f(L1, 3), f(L2, 3)],
+    ["Umbral para producir", "c₁ < " + f((a + c2) / 2), "c₂ < " + f((a + c1) / 2)],
+  ];
+  let h = filas.map((r, i) => "<tr>" + r.map(c => i === 0 ? `<th>${c}</th>` : `<td>${c}</td>`).join("") + "</tr>").join("");
+  h += `<tr><td>Precio P*</td><td colspan="2">${f(Q > 0 ? P : NaN)}</td></tr>`;
+  h += `<tr><td>Cantidad total Q*</td><td colspan="2">${f(Q)}</td></tr>`;
+  h += `<tr><td>HHI (0 a 1)</td><td colspan="2">${f(hhi, 3)}</td></tr>`;
+  h += `<tr><td>Elasticidad ε en el equilibrio</td><td colspan="2">${f(eps, 3)}</td></tr>`;
+  h += `<tr><td>HHI / ε = Σ sᵢLᵢ</td><td colspan="2">${f(hhi / eps, 3)}</td></tr>`;
+  $("tabla").innerHTML = h;
+
+  const int1 = (a - 2 * c1 + c2) / (3 * b), int2 = (a - 2 * c2 + c1) / (3 * b);
+  let t = `Fórmula interior: q₁ = (a − 2c₁ + c₂)/(3b) = <b>${f(int1)}</b>, q₂ = (a − 2c₂ + c₁)/(3b) = <b>${f(int2)}</b>.`;
+  if (eq.caso === "ambas") t += " Las dos son positivas, así que el equilibrio es interior.";
+  if (eq.caso === "solo1") t += ` Como c₂ = ${f(c2)} ≥ (a + c₁)/2 = ${f((a + c1) / 2)}, el precio de monopolio de la empresa 1, la empresa 2 no cubre su costo ni con la primera unidad. La empresa 1 produce su cantidad de monopolio (a − c₁)/(2b) = <b>${f((a - c1) / (2 * b))}</b>. Ojo: el ${f(int1)} de la fórmula interior para q₁ no es el equilibrio; esa fórmula solo vale cuando ambas producen.`;
+  if (eq.caso === "solo2") t += ` Como c₁ = ${f(c1)} ≥ (a + c₂)/2 = ${f((a + c2) / 2)}, el precio de monopolio de la empresa 2, la empresa 1 no cubre su costo ni con la primera unidad. La empresa 2 produce su cantidad de monopolio (a − c₂)/(2b) = <b>${f((a - c2) / (2 * b))}</b>. Ojo: el ${f(int2)} de la fórmula interior para q₂ no es el equilibrio; esa fórmula solo vale cuando ambas producen.`;
+  if (eq.caso === "ninguna") t += ` Ambos costos son mayores o iguales que a = ${f(a)}: nadie paga más que a por la primera unidad, así que ninguna produce.`;
+  const lib = casoLibro(a, c1, c2);
+  const fuera = c1 >= a || c2 >= a;
+  if (fuera) t += `<br><br><span style="color:#1F4E79">Este punto está fuera del supuesto del libro (Muñoz-García, 2017, apéndice del cap. 8): a &gt; c₁, c₂. Dentro de ese supuesto las dos rectas bastan para clasificar los casos.</span>`;
+  if (lib !== eq.caso) t += `<br><br><span style="color:#B22222"><b>Las dos rectas solas no bastan aquí:</b> clasificarían este punto como "${NOMBRE[lib].toLowerCase()}", pero ninguna produce, porque el costo de esa empresa es mayor o igual que a = ${f(a)} y no produciría ni como monopolista. Es la parte de la figura del libro que queda fuera de su supuesto.</span>`;
+  $("explica").innerHTML = t;
+}
+
+function actualizar() {
+  const p = leer();
+  const M = 2.5 * p.a;
+  for (const id of ["c1", "c2"]) { $(id).max = M; if (+$(id).value > M) $(id).value = M; }
+  const q = leer();
+  $("va").textContent = f(q.a); $("vb").textContent = f(q.b, 1); $("vc1").textContent = f(q.c1); $("vc2").textContent = f(q.c2);
+  const eq = equilibrio(q.a, q.b, q.c1, q.c2);
+  dibujarQ(q, eq); dibujarC(q, eq); tabla(q, eq);
+}
+
+for (const id of ["a", "b", "c1", "c2"]) $(id).addEventListener("input", actualizar);
+$("libro").addEventListener("change", actualizar);
+$("dominio").addEventListener("change", actualizar);
+$("ajuste").addEventListener("change", actualizar);
+document.querySelectorAll(".presets button").forEach(bt => bt.addEventListener("click", () => {
+  const [x, y] = bt.dataset.p.split(",").map(Number);
+  $("a").value = 30; $("b").value = 1; actualizar();
+  $("c1").value = x; $("c2").value = y;
+  if (bt.dataset.p === "36,60") { $("libro").checked = true; $("dominio").checked = true; }
+  actualizar();
+}));
+
+// Arrastrar el punto en el plano de costos
+const svgC = $("svgC"); let arrastrando = false;
+function moverA(evt) {
+  const r = svgC.getBoundingClientRect();
+  const x = (evt.clientX - r.left) / r.width * SIZE, y = (evt.clientY - r.top) / r.height * SIZE;
+  const { M } = escalaC;
+  const c1 = Math.max(0, Math.min(M, (x - PAD) / PLOT * M));
+  const c2 = Math.max(0, Math.min(M, (SIZE - PAD - y) / PLOT * M));
+  $("c1").value = Math.round(c1 * 2) / 2; $("c2").value = Math.round(c2 * 2) / 2;
+  actualizar();
+}
+svgC.addEventListener("pointerdown", e => { arrastrando = true; svgC.setPointerCapture(e.pointerId); moverA(e); });
+svgC.addEventListener("pointermove", e => { if (arrastrando) moverA(e); });
+svgC.addEventListener("pointerup", () => { arrastrando = false; });
+
+actualizar();
+</script>
+</body>
+</html>
