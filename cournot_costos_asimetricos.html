@@ -227,13 +227,13 @@ function tabla(p, eq) {
   const int1 = (a - 2 * c1 + c2) / (3 * b), int2 = (a - 2 * c2 + c1) / (3 * b);
   let t = `Fórmula interior: q₁ = (a − 2c₁ + c₂)/(3b) = <b>${f(int1)}</b>, q₂ = (a − 2c₂ + c₁)/(3b) = <b>${f(int2)}</b>.`;
   if (eq.caso === "ambas") t += " Las dos son positivas, así que el equilibrio es interior.";
-  if (eq.caso === "solo1") t += ` Como c₂ = ${f(c2)} ≥ (a + c₁)/2 = ${f((a + c1) / 2)}, el precio de monopolio de la empresa 1, la empresa 2 no cubre su costo ni con la primera unidad. La empresa 1 produce su cantidad de monopolio (a − c₁)/(2b) = <b>${f((a - c1) / (2 * b))}</b>. Ojo: el ${f(int1)} de la fórmula interior para q₁ no es el equilibrio; esa fórmula solo vale cuando ambas producen.`;
-  if (eq.caso === "solo2") t += ` Como c₁ = ${f(c1)} ≥ (a + c₂)/2 = ${f((a + c2) / 2)}, el precio de monopolio de la empresa 2, la empresa 1 no cubre su costo ni con la primera unidad. La empresa 2 produce su cantidad de monopolio (a − c₂)/(2b) = <b>${f((a - c2) / (2 * b))}</b>. Ojo: el ${f(int2)} de la fórmula interior para q₂ no es el equilibrio; esa fórmula solo vale cuando ambas producen.`;
+  if (eq.caso === "solo1") t += ` Como c₂ = ${f(c2)} ≥ (a + c₁)/2 = ${f((a + c1) / 2)}, el precio p̄₁ que cobraría la empresa 1 si estuviera sola en el mercado, la empresa 2 no cubre su costo ni con la primera unidad. La empresa 1 produce lo mismo que si estuviera sola: q̄₁ = BR₁(0) = (a − c₁)/(2b) = <b>${f((a - c1) / (2 * b))}</b>. Ojo: el ${f(int1)} de la fórmula interior para q₁ no es el equilibrio; esa fórmula solo vale cuando ambas producen.`;
+  if (eq.caso === "solo2") t += ` Como c₁ = ${f(c1)} ≥ (a + c₂)/2 = ${f((a + c2) / 2)}, el precio p̄₂ que cobraría la empresa 2 si estuviera sola en el mercado, la empresa 1 no cubre su costo ni con la primera unidad. La empresa 2 produce lo mismo que si estuviera sola: q̄₂ = BR₂(0) = (a − c₂)/(2b) = <b>${f((a - c2) / (2 * b))}</b>. Ojo: el ${f(int2)} de la fórmula interior para q₂ no es el equilibrio; esa fórmula solo vale cuando ambas producen.`;
   if (eq.caso === "ninguna") t += ` Ambos costos son mayores o iguales que a = ${f(a)}: nadie paga más que a por la primera unidad, así que ninguna produce.`;
   const lib = casoLibro(a, c1, c2);
   const fuera = c1 >= a || c2 >= a;
   if (fuera) t += `<br><br><span style="color:#1F4E79">Este punto está fuera del supuesto del libro (Muñoz-García, 2017, apéndice del cap. 8): a &gt; c₁, c₂. Dentro de ese supuesto las dos rectas bastan para clasificar los casos.</span>`;
-  if (lib !== eq.caso) t += `<br><br><span style="color:#B22222"><b>Las dos rectas solas no bastan aquí:</b> clasificarían este punto como "${NOMBRE[lib].toLowerCase()}", pero ninguna produce, porque el costo de esa empresa es mayor o igual que a = ${f(a)} y no produciría ni como monopolista. Es la parte de la figura del libro que queda fuera de su supuesto.</span>`;
+  if (lib !== eq.caso) t += `<br><br><span style="color:#B22222"><b>Las dos rectas solas no bastan aquí:</b> clasificarían este punto como "${NOMBRE[lib].toLowerCase()}", pero ninguna produce, porque el costo de esa empresa es mayor o igual que a = ${f(a)} y no produciría ni estando sola en el mercado. Es la parte de la figura del libro que queda fuera de su supuesto.</span>`;
   $("explica").innerHTML = t;
 }
 
