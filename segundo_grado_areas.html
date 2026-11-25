@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Segundo grado: las áreas</title>
+<style>
+  :root { --azul:#1F4E79; --rojo:#B22222; --gris:#555; }
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; margin: 0; background: #f7f7f5; color: #222; }
+  header { background: var(--azul); color: white; padding: 12px 24px; }
+  header h1 { margin: 0; font-size: 20px; font-weight: 600; }
+  header p { margin: 4px 0 0; font-size: 13px; opacity: .85; }
+  main { padding: 18px 24px; display: grid; gap: 18px; }
+  .panel { background: white; border: 1px solid #ddd; border-radius: 8px; padding: 14px 16px; }
+  .fila { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .tres { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; }
+  h2 { font-size: 15px; margin: 0 0 6px; }
+  .ctrl { margin-bottom: 10px; }
+  .ctrl label { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 3px; }
+  .ctrl label b { font-variant-numeric: tabular-nums; }
+  input[type=range] { width: 100%; }
+  .botones button { font-size: 13px; margin: 0 4px 6px 0; padding: 5px 10px; border: 1px solid #bbb; background: #fafafa; border-radius: 4px; cursor: pointer; }
+  .botones button:hover { background: #eef3f9; }
+  svg { width: 100%; height: auto; display: block; }
+  .cuentas { font-size: 13px; line-height: 1.5; font-variant-numeric: tabular-nums; margin-top: 6px; }
+  .cuentas td { padding: 1px 6px; } .cuentas td:last-child { text-align: right; }
+  #ganancia { font-size: 17px; font-weight: 600; padding: 10px 12px; border-radius: 6px; background: #e3f3e4; }
+  #barra { height: 26px; border: 1px solid #999; border-radius: 4px; overflow: hidden; margin-top: 10px; font-size: 12px; font-variant-numeric: tabular-nums; }
+  #barra div { min-width: 30px; display: flex; align-items: center; justify-content: center; white-space: nowrap; overflow: hidden; }
+  #balance { font-size: 13px; line-height: 1.6; margin-top: 6px; }
+  #balance span { display: inline-flex; align-items: center; gap: 5px; margin-right: 12px; }
+  #elige { font-size: 14px; line-height: 1.5; margin-top: 8px; }
+  .leyenda { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13px; }
+  .leyenda span { display: inline-flex; align-items: center; gap: 6px; }
+  .cuadro { width: 18px; height: 13px; border: 1px solid #999; display: inline-block; }
+  .nota { font-size: 12px; color: var(--gris); margin: 6px 0 0; line-height: 1.45; }
+  @media (max-width: 1000px) { main { padding: 16px; } .fila, .tres { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>Discriminación de segundo grado: qué representan las áreas</h1>
+  <p>Un consumidor de cada tipo. Alto: p = 30 &minus; q. Bajo: p = 24 &minus; q. Costo marginal c = 6. La empresa ofrece dos paquetes (q unidades por un pago total T) y cada consumidor elige. EC2005B Competencia Económica.</p>
+</header>
+<main>
+  <div class="fila">
+    <div class="panel">
+      <h2>El menú</h2>
+      <div class="botones">
+        <button data-i="1">Intento 1</button><button data-i="2">Intento 2</button><button data-i="3">Intento 3</button>
+        <button id="ejer">Números del ejercicio en clase</button>
+      </div>
+      <div class="ctrl"><label><span>Chico: unidades q<sub>B</sub></span> <b id="vqB"></b></label><input type="range" id="qB" min="0" max="30" step="1" value="12"></div>
+      <div class="ctrl"><label><span>Chico: pago total T<sub>B</sub></span> <b id="vTB"></b></label><input type="range" id="TB" min="0" max="450" step="1" value="216"></div>
+      <div class="ctrl"><label><span>Grande: unidades q<sub>A</sub></span> <b id="vqA"></b></label><input type="range" id="qA" min="0" max="30" step="1" value="24"></div>
+      <div class="ctrl"><label><span>Grande: pago total T<sub>A</sub></span> <b id="vTA"></b></label><input type="range" id="TA" min="0" max="450" step="1" value="360"></div>
+    </div>
+    <div class="panel">
+      <div id="ganancia"></div>
+      <div id="barra"></div>
+      <div id="balance"></div>
+      <div id="elige"></div>
+      <p class="nota">Cada quien compra el paquete que le deja más excedente; en empate, el más grande.</p>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="leyenda">
+      <span><i class="cuadro" style="background:#d9d9d9"></i>Costo (c &times; q)</span>
+      <span><i class="cuadro" style="background:#a5d6a7"></i>Beneficio de la empresa (T &minus; costo)</span>
+      <span><i class="cuadro" style="background:#bbdefb"></i>Unidades que le valen más de lo que paga</span>
+      <span><i class="cuadro" style="border:none"><svg width="18" height="13"><rect width="18" height="13" fill="#a5d6a7"/><path d="M0,13 L13,0 M5,13 L18,0" stroke="#e65100" stroke-width="1.5"/></svg></i>Unidades que le valen menos de lo que paga</span>
+      <span><i class="cuadro" style="background:#f8bbd0"></i>Pérdida irrecuperable</span>
+      <span><i class="cuadro" style="background:#ffe6ad;border:2px solid #b26a00"></i>Renta de información</span>
+    </div>
+    <p class="nota">La línea negra es el precio por unidad, T/q. Excedente del consumidor = azul menos rayado. Valor del paquete = costo + beneficio + excedente. Si el pago no cubre el costo, la parte que falta sale en rojo.</p>
+  </div>
+
+  <div class="tres">
+    <div class="panel"><h2 id="tB"></h2><svg id="gB" viewBox="0 0 400 360"></svg><table class="cuentas" id="cB"></table></div>
+    <div class="panel"><h2 id="tA"></h2><svg id="gA" viewBox="0 0 400 360"></svg><table class="cuentas" id="cA"></table></div>
+    <div class="panel"><h2 id="tT">La renta: por qué el alto se queda con algo</h2><svg id="gT" viewBox="0 0 400 360"></svg><table class="cuentas" id="cT"></table>
+      <p class="nota">Cada unidad del chico le vale más al alto que al bajo. Si el chico cobra todo lo que vale para el bajo, el alto se queda con la franja. El grande tiene que dejarle al menos eso.</p>
+    </div>
+  </div>
+</main>
+
+<svg width="0" height="0" style="position:absolute">
+  <defs><pattern id="raya" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="8" stroke="#e65100" stroke-width="2"/></pattern></defs>
+</svg>
+
+<script>
+const $ = id => document.getElementById(id);
+const NS = "http://www.w3.org/2000/svg";
+const W = 400, H = 360, PL = 44, PR = 12, PT = 14, PB = 36;
+let P = { aA: 30, aB: 24, c: 6 };
+
+const V = (a, q) => a * q - q * q / 2;
+function intento(k) {
+  const qBe = P.aB - P.c, qAe = P.aA - P.c, d = P.aA - P.aB;
+  if (k === 1) return { qB: qBe, TB: V(P.aB, qBe), qA: qAe, TA: V(P.aA, qAe) };
+  if (k === 2) return { qB: qBe, TB: V(P.aB, qBe), qA: qAe, TA: V(P.aA, qAe) - d * qBe };
+  const qB = Math.max(0, qBe - d);   // un consumidor de cada tipo: margen que se pierde = renta que se ahorra
+  return { qB, TB: V(P.aB, qB), qA: qAe, TA: V(P.aA, qAe) - d * qB };
+}
+function elige(a, m) {
+  const ops = [{ n: "nada", q: 0, T: 0 }, { n: "chico", q: m.qB, T: m.TB }, { n: "grande", q: m.qA, T: m.TA }]
+    .filter(o => o.n === "nada" || o.q > 0).map(o => ({ ...o, s: V(a, o.q) - o.T }));
+  let b = ops[0];
+  for (const o of ops) if (o.s > b.s + 1e-9 || (Math.abs(o.s - b.s) <= 1e-9 && o.q >= b.q)) b = o;
+  return { b, ops };
+}
+
+function el(tag, attrs, parent, text) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (text !== undefined) e.textContent = text;
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function f(x, d = 2) { const r = parseFloat((+x).toFixed(d)); return (Object.is(r, -0) ? 0 : r).toLocaleString("es-MX"); }
+
+// Dibuja la demanda p = a - q y el paquete (q, T) con la descomposición de su valor.
+function dibujar(svg, a, q, T, colorDem, o = {}) {
+  const otraDem = o.otraDem;
+  svg.innerHTML = "";
+  const xmax = P.aA * 1.05, ymax = P.aA * 1.12;
+  const sx = x => PL + x / xmax * (W - PL - PR), sy = y => H - PB - y / ymax * (H - PB - PT);
+  const pts = arr => arr.map(p => sx(p[0]) + "," + sy(p[1])).join(" ");
+  const c = P.c, qe = a - c;
+  // pérdida irrecuperable respecto a la cantidad eficiente
+  if (!o.sinRosa && q < qe) el("polygon", { points: pts([[q, c], [q, a - q], [qe, c]]), fill: "#f8bbd0" }, svg);
+  if (!o.sinRosa && q > qe) el("polygon", { points: pts([[qe, c], [q, c], [q, a - q]]), fill: "#f8bbd0" }, svg);
+  if (q > 0 && !o.soloFranja) {
+    const pm = T / q;                          // precio promedio por unidad
+    const low = Math.max(0, Math.min(pm, c)), high = Math.max(pm, c);
+    // costo
+    el("polygon", { points: pts([[0, 0], [q, 0], [q, c], [0, c]]), fill: "#d9d9d9" }, svg);
+    // ganancia (o pérdida) de la empresa entre c y el precio promedio
+    if (pm >= c) el("polygon", { points: pts([[0, c], [q, c], [q, pm], [0, pm]]), fill: "#a5d6a7" }, svg);
+    // excedente: arriba del precio promedio y abajo de la demanda
+    const x1 = Math.min(Math.max(a - pm, 0), q);
+    if (x1 > 0) el("polygon", { points: pts([[0, pm], [0, a], [x1, a - x1], [x1, pm]]), fill: "#bbdefb" }, svg);
+    // se resta: abajo del precio promedio y arriba de la demanda
+    if (x1 < q) el("polygon", { points: pts([[x1, pm], [q, pm], [q, a - q]]), fill: "url(#raya)", stroke: "#e65100", "stroke-width": 1 }, svg);
+    // pérdida de la empresa (cobra menos que el costo): encima del azul, porque esas unidades también son excedente del consumidor
+    if (pm < c) el("polygon", { points: pts([[0, Math.max(pm, 0)], [q, Math.max(pm, 0)], [q, c], [0, c]]), fill: "#ef9a9a", "fill-opacity": 0.85 }, svg);
+    // línea del precio promedio
+    el("line", { x1: sx(0), y1: sy(pm), x2: sx(q), y2: sy(pm), stroke: "#000", "stroke-width": 1.8 }, svg);
+    el("text", { x: sx(q) + 4, y: sy(pm) + 4, "font-size": 11, stroke: "#fff", "stroke-width": 3, "paint-order": "stroke" }, svg, "T/q = " + f(pm, 1));
+    el("line", { x1: sx(q), y1: sy(0), x2: sx(q), y2: sy(Math.max(a - q, pm)), stroke: "#000", "stroke-dasharray": "3 3" }, svg);
+  }
+  // ejes
+  for (let t = 0; t <= xmax; t += 6) {
+    el("line", { x1: sx(t), y1: sy(0), x2: sx(t), y2: sy(0) + 4, stroke: "#333" }, svg);
+    el("text", { x: sx(t), y: sy(0) + 16, "font-size": 10, "text-anchor": "middle" }, svg, t);
+  }
+  for (let t = 0; t <= ymax; t += 6) {
+    el("line", { x1: sx(0) - 4, y1: sy(t), x2: sx(0), y2: sy(t), stroke: "#333" }, svg);
+    el("text", { x: sx(0) - 7, y: sy(t) + 4, "font-size": 10, "text-anchor": "end" }, svg, t);
+  }
+  el("line", { x1: sx(0), y1: sy(0), x2: sx(xmax), y2: sy(0), stroke: "#222", "stroke-width": 1.3 }, svg);
+  el("line", { x1: sx(0), y1: sy(0), x2: sx(0), y2: sy(ymax), stroke: "#222", "stroke-width": 1.3 }, svg);
+  el("text", { x: sx(xmax), y: sy(0) + 30, "font-size": 12, "text-anchor": "end", "font-style": "italic" }, svg, "q");
+  el("text", { x: 6, y: PT + 4, "font-size": 12, "font-style": "italic" }, svg, "p");
+  // costo marginal y demandas
+  el("line", { x1: sx(0), y1: sy(c), x2: sx(xmax), y2: sy(c), stroke: "#333", "stroke-dasharray": "5 4" }, svg);
+  el("text", { x: sx(xmax) - 2, y: sy(c) - 4, "font-size": 11, "text-anchor": "end" }, svg, "c = " + c);
+  if (otraDem) el("line", { x1: sx(0), y1: sy(otraDem), x2: sx(otraDem), y2: sy(0), stroke: "#B22222", "stroke-width": 1.5, "stroke-dasharray": "6 4" }, svg);
+  el("line", { x1: sx(0), y1: sy(a), x2: sx(a), y2: sy(0), stroke: colorDem, "stroke-width": 2.2 }, svg);
+  // renta de información: franja entre las dos demandas hasta q, como en las láminas
+  if (o.franja && otraDem && q > 0) {
+    const qq = Math.min(q, a), d = a - otraDem, base = x => Math.max(otraDem - x, 0);
+    const quiebre = qq > otraDem ? [[otraDem, 0]] : [];
+    if (o.soloFranja) {
+      const qb = Math.min(qq, otraDem);
+      el("polygon", { points: pts([[0, 0], [0, otraDem], [qb, otraDem - qb], [qb, 0]]), fill: "#B22222", "fill-opacity": 0.10 }, svg);
+      el("line", { x1: sx(qq), y1: sy(0), x2: sx(qq), y2: sy(a - qq), stroke: "#000", "stroke-dasharray": "3 3" }, svg);
+      el("text", { x: sx(qb / 2), y: sy(Math.max((otraDem - qb / 2) / 2, 1)) + 4, "font-size": 11, "text-anchor": "middle", fill: "#7a1c1c" }, svg, "valor para el bajo: " + f(V(otraDem, qb)));
+    }
+    el("polygon", { points: pts([[0, otraDem], [0, a], [qq, a - qq], [qq, base(qq)], ...quiebre]), fill: "#ffb300", "fill-opacity": 0.28, stroke: "#b26a00", "stroke-width": 2 }, svg);
+    const area = V(a, qq) - V(otraDem, Math.min(qq, otraDem));
+    const tx = sx(qq / 2) + 12, ty = sy(a - qq / 2) - 22;
+    el("text", { x: tx, y: ty, "font-size": 11, fill: "#8a5200", "font-weight": 600 }, svg, "franja: " + (qq <= otraDem ? f(d) + " × " + f(qq) + " = " : "") + f(area));
+    el("text", { x: tx, y: ty + 13, "font-size": 11, fill: "#8a5200" }, svg, "lo que el alto valora de más");
+  }
+}
+
+function cuentas(tabla, a, q, T, sinRosa) {
+  const val = V(a, q), costo = P.c * q;
+  tabla.innerHTML = q > 0
+    ? `<tr><td>Valor del paquete V(${f(q)})</td><td>${f(val)}</td></tr>
+       <tr><td>&nbsp;&nbsp;costo (gris)</td><td>${f(costo)}</td></tr>
+       <tr><td>&nbsp;&nbsp;beneficio de la empresa (verde), T &minus; costo</td><td>${f(T - costo)}</td></tr>
+       <tr><td>&nbsp;&nbsp;excedente del consumidor (azul &minus; rayado), V &minus; T</td><td>${f(val - T)}</td></tr>
+       ${sinRosa ? "" : `<tr><td>Pérdida irrecuperable (rosa)</td><td>${f(Math.abs(V(a, a - P.c) - P.c * (a - P.c) - (val - costo)))}</td></tr>`}`
+    : `<tr><td>No compra nada: ni beneficio ni excedente.</td><td></td></tr>`;
+}
+
+function leer() { return { qB: +$("qB").value, TB: +$("TB").value, qA: +$("qA").value, TA: +$("TA").value }; }
+function poner(m) { $("qB").value = m.qB; $("TB").value = Math.round(m.TB); $("qA").value = m.qA; $("TA").value = Math.round(m.TA); render(); }
+
+function render() {
+  const m = leer();
+  for (const k of ["qB", "TB", "qA", "TA"]) $("v" + k).textContent = f(m[k]);
+  const eB = elige(P.aB, m), eA = elige(P.aA, m);
+  const nom = { nada: "no compra", chico: "compra el chico", grande: "compra el grande" };
+  const paq = n => n === "chico" ? { q: m.qB, T: m.TB } : n === "grande" ? { q: m.qA, T: m.TA } : { q: 0, T: 0 };
+  const pB = paq(eB.b.n), pA = paq(eA.b.n);
+  $("tB").textContent = "Tipo bajo: " + nom[eB.b.n];
+  $("tA").textContent = "Tipo alto: " + nom[eA.b.n];
+  dibujar($("gB"), P.aB, pB.q, pB.T, "#B22222");
+  dibujar($("gA"), P.aA, pA.q, pA.T, "#1F4E79");
+  cuentas($("cB"), P.aB, pB.q, pB.T); cuentas($("cA"), P.aA, pA.q, pA.T);
+  // tercera gráfica: solo la renta (la franja entre las demandas hasta q_B)
+  const sChicoA = V(P.aA, m.qB) - m.TB, sGrandeA = V(P.aA, m.qA) - m.TA;
+  const franja = V(P.aA, m.qB) - V(P.aB, Math.min(m.qB, P.aB)), sChicoB = V(P.aB, Math.min(m.qB, P.aB)) - m.TB;
+  dibujar($("gT"), P.aA, m.qB, m.TB, "#1F4E79", { otraDem: P.aB, franja: true, soloFranja: true, sinRosa: true });
+  $("cT").innerHTML = m.qB > 0 ? `<tr><td>Franja: lo que el alto valora de más en el chico</td><td>${f(franja)}</td></tr>
+     <tr><td>+ valor para el bajo menos el pago T<sub>B</sub></td><td>${f(sChicoB)}</td></tr>
+     <tr><td><b>= lo que el chico le deja al alto</b></td><td><b>${f(sChicoA)}</b></td></tr>
+     <tr><td>Lo que el grande le deja al alto</td><td>${f(sGrandeA)}</td></tr>` : `<tr><td>No hay paquete chico.</td><td></td></tr>`;
+  const gB = pB.T - P.c * pB.q, gA = pA.T - P.c * pA.q;
+  const ref = (V(P.aA, P.aA - P.c) - P.c * (P.aA - P.c)) + (V(P.aB, P.aB - P.c) - P.c * (P.aB - P.c));
+  const par = x => x < 0 ? `(${f(x)})` : f(x);
+  $("ganancia").innerHTML = `Beneficio de la empresa = ${par(gB)} con el bajo + ${par(gA)} con el alto = ${f(gB + gA)}<br><span style="font-weight:400;font-size:14px">Si viera el tipo: ${f(ref)}</span>`;
+  const corto = { nada: "no compra", chico: "compra el chico", grande: "compra el grande" };
+  let t = `<b>Bajo:</b> ${corto[eB.b.n]}, excedente ${f(eB.b.s)}.<br>`;
+  if (eA.b.n === "chico") t += `<b>Alto:</b> se disfraza y compra el chico, excedente ${f(eA.b.s)} (el grande le dejaría ${f(sGrandeA)}).`;
+  else if (eA.b.n === "grande") t += `<b>Alto:</b> compra el grande, excedente ${f(eA.b.s)} (el chico le dejaría ${f(sChicoA)}).`;
+  else t += `<b>Alto:</b> no compra (el chico le dejaría ${f(sChicoA)} y el grande ${f(sGrandeA)}).`;
+  if (m.qA < m.qB) t += `<br><b>Ojo:</b> el paquete "grande" tiene menos unidades que el "chico".`;
+  $("elige").innerHTML = t;
+  // balance: a dónde va el beneficio máximo posible
+  const gan = gB + gA, perd = ref - gan - eA.b.s - eB.b.s;
+  const partes = [["Beneficio de la empresa", gan, "#a5d6a7"], ["Excedente del alto", eA.b.s, "#90caf9"], ["Excedente del bajo", eB.b.s, "#d6eafc"], ["Pérdida irrecuperable", perd, "#f8bbd0"]];
+  const ok = partes.every(x => x[1] >= -1e-9);
+  $("barra").innerHTML = ok ? partes.filter(x => x[1] > 1e-9).map(x => `<div style="width:${100 * x[1] / ref}%;background:${x[2]}" title="${x[0]}: ${f(x[1])}">${f(x[1])}</div>`).join("") : "";
+  $("barra").style.display = ok ? "flex" : "none";
+  $("balance").innerHTML = `<b>¿A dónde van los ${f(ref)}?</b> ` + partes.map(x => `<span><i class="cuadro" style="background:${x[2]}"></i>${x[0]}: ${f(x[1])}</span>`).join(" ") + (ok ? "" : `<br>La empresa pierde dinero con este menú, así que no se dibuja la barra.`);
+}
+
+for (const k of ["qB", "TB", "qA", "TA"]) $(k).addEventListener("input", render);
+document.querySelectorAll("[data-i]").forEach(b => b.addEventListener("click", () => poner(intento(+b.dataset.i))));
+$("ejer").addEventListener("click", () => {
+  const deck = P.aA === 30;
+  P = deck ? { aA: 20, aB: 16, c: 4 } : { aA: 30, aB: 24, c: 6 };
+  $("ejer").textContent = deck ? "Números del deck" : "Números del ejercicio en clase";
+  document.querySelector("header p").innerHTML = `Un consumidor de cada tipo. Alto: p = ${P.aA} &minus; q. Bajo: p = ${P.aB} &minus; q. Costo marginal c = ${P.c}. La empresa ofrece dos paquetes (q unidades por un pago total T) y cada consumidor elige. EC2005B Competencia Económica.`;
+  const Tmax = Math.ceil(V(P.aA, P.aA));
+  for (const k of ["qB", "qA"]) $(k).max = P.aA;
+  for (const k of ["TB", "TA"]) $(k).max = Tmax;
+  poner(intento(3));
+});
+render();
+</script>
+</body>
+</html>
