@@ -17,6 +17,14 @@
   .tres { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; }
   h2 { font-size: 15px; margin: 0 0 6px; }
   .ctrl { margin-bottom: 10px; }
+  .auto { display: block; font-size: 13px; margin: 2px 0 4px; }
+  .auto span { color: var(--gris); }
+  input[type=range]:disabled { opacity: .45; }
+  .paquete { border-left: 5px solid #B22222; background: #fbf5f5; border-radius: 4px; padding: 8px 12px 2px; margin-top: 10px; }
+  .paquete.grande { border-left-color: #1F4E79; background: #f3f6fa; }
+  .paquete .titulo { font-size: 14px; font-weight: 600; }
+  .paquete .titulo span, .paquete .resumen span { font-weight: 400; color: var(--gris); font-size: 13px; }
+  .paquete .resumen { font-size: 16px; margin: 2px 0 8px; font-variant-numeric: tabular-nums; }
   .ctrl label { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 3px; }
   .ctrl label b { font-variant-numeric: tabular-nums; }
   input[type=range] { width: 100%; }
@@ -31,6 +39,21 @@
   #balance { font-size: 13px; line-height: 1.6; margin-top: 6px; }
   #balance span { display: inline-flex; align-items: center; gap: 5px; margin-right: 12px; }
   #elige { font-size: 14px; line-height: 1.5; margin-top: 8px; }
+  #decision { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .dec { border: 1px solid #ddd; border-radius: 6px; padding: 8px 10px; border-top: 4px solid #B22222; }
+  .dec.alto { border-top-color: #1F4E79; }
+  .dec h3 { margin: 0 0 4px; font-size: 14px; }
+  .dec table { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
+  .dec td { padding: 4px 4px; vertical-align: middle; }
+  .dec td.cuenta { color: var(--gris); font-size: 12px; white-space: nowrap; }
+  .dec td.exc { text-align: right; font-weight: 600; white-space: nowrap; }
+  .dec td.pista { width: 26%; }
+  .dec td:first-child { white-space: nowrap; }
+  .dec .pista div { height: 12px; border-radius: 2px; min-width: 2px; }
+  .dec tr.elegido td { background: #fff6d6; }
+  .dec tr.elegido td:first-child { font-weight: 700; }
+  .dec .marca { font-size: 12px; font-weight: 700; color: #7a5a00; white-space: nowrap; }
+  @media (max-width: 1000px) { #decision { grid-template-columns: 1fr; } }
   .leyenda { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13px; }
   .leyenda span { display: inline-flex; align-items: center; gap: 6px; }
   .cuadro { width: 18px; height: 13px; border: 1px solid #999; display: inline-block; }
@@ -49,19 +72,29 @@
       <h2>El menú</h2>
       <div class="botones">
         <button data-i="1">Intento 1</button><button data-i="2">Intento 2</button><button data-i="3">Intento 3</button>
-        <button id="ejer">Números del ejercicio en clase</button>
       </div>
-      <div class="ctrl"><label><span>Chico: unidades q<sub>B</sub></span> <b id="vqB"></b></label><input type="range" id="qB" min="0" max="30" step="1" value="12"></div>
-      <div class="ctrl"><label><span>Chico: pago total T<sub>B</sub></span> <b id="vTB"></b></label><input type="range" id="TB" min="0" max="450" step="1" value="216"></div>
-      <div class="ctrl"><label><span>Grande: unidades q<sub>A</sub></span> <b id="vqA"></b></label><input type="range" id="qA" min="0" max="30" step="1" value="24"></div>
-      <div class="ctrl"><label><span>Grande: pago total T<sub>A</sub></span> <b id="vTA"></b></label><input type="range" id="TA" min="0" max="450" step="1" value="360"></div>
+      <label class="auto"><input type="checkbox" id="auto" autocomplete="off"> Cobrar el máximo posible por estas cantidades <span>(solo mueves las cantidades; los pagos se ajustan solos)</span></label>
+      <div class="paquete chico">
+        <div class="titulo">Paquete chico <span>(pensado para el tipo bajo)</span></div>
+        <div class="resumen" id="rB"></div>
+        <div class="ctrl"><label><span>Cantidad: unidades del paquete, q<sub>B</sub></span> <b id="vqB"></b></label><input type="range" autocomplete="off" id="qB" min="0" max="30" step="1" value="12"></div>
+        <div class="ctrl"><label><span>Pago total por el paquete, T<sub>B</sub></span> <b id="vTB"></b></label><input type="range" autocomplete="off" id="TB" min="0" max="450" step="1" value="216"></div>
+      </div>
+      <div class="paquete grande">
+        <div class="titulo">Paquete grande <span>(pensado para el tipo alto)</span></div>
+        <div class="resumen" id="rA"></div>
+        <div class="ctrl"><label><span>Cantidad: unidades del paquete, q<sub>A</sub></span> <b id="vqA"></b></label><input type="range" autocomplete="off" id="qA" min="0" max="30" step="1" value="24"></div>
+        <div class="ctrl"><label><span>Pago total por el paquete, T<sub>A</sub></span> <b id="vTA"></b></label><input type="range" autocomplete="off" id="TA" min="0" max="450" step="1" value="360"></div>
+      </div>
     </div>
     <div class="panel">
       <div id="ganancia"></div>
       <div id="barra"></div>
       <div id="balance"></div>
+      <h2 style="margin-top:14px">Cómo decide cada consumidor</h2>
+      <p class="nota" style="margin:0 0 6px">Cada uno compara sus tres opciones y se queda con la que le deja más excedente (lo que le vale el paquete menos lo que paga). En empate, compra el paquete más grande.</p>
+      <div id="decision"></div>
       <div id="elige"></div>
-      <p class="nota">Cada quien compra el paquete que le deja más excedente; en empate, el más grande.</p>
     </div>
   </div>
 
@@ -74,7 +107,7 @@
       <span><i class="cuadro" style="background:#f8bbd0"></i>Pérdida irrecuperable</span>
       <span><i class="cuadro" style="background:#ffe6ad;border:2px solid #b26a00"></i>Renta de información</span>
     </div>
-    <p class="nota">La línea negra es el precio por unidad, T/q. Excedente del consumidor = azul menos rayado. Valor del paquete = costo + beneficio + excedente. Si el pago no cubre el costo, la parte que falta sale en rojo.</p>
+    <p class="nota">La línea negra es el precio por unidad: el pago repartido entre las unidades del paquete. Excedente del consumidor = azul menos rayado. Valor del paquete = costo + beneficio + excedente. Si el pago no cubre el costo, la parte que falta sale en rojo.</p>
   </div>
 
   <div class="tres">
@@ -95,6 +128,7 @@ const $ = id => document.getElementById(id);
 const NS = "http://www.w3.org/2000/svg";
 const W = 400, H = 360, PL = 44, PR = 12, PT = 14, PB = 36;
 let P = { aA: 30, aB: 24, c: 6 };
+const PASO = P.aA > 20 ? 3 : 2;   // cada cuántas unidades va un número en los ejes
 
 const V = (a, q) => a * q - q * q / 2;
 function intento(k) {
@@ -148,17 +182,20 @@ function dibujar(svg, a, q, T, colorDem, o = {}) {
     if (pm < c) el("polygon", { points: pts([[0, Math.max(pm, 0)], [q, Math.max(pm, 0)], [q, c], [0, c]]), fill: "#ef9a9a", "fill-opacity": 0.85 }, svg);
     // línea del precio promedio
     el("line", { x1: sx(0), y1: sy(pm), x2: sx(q), y2: sy(pm), stroke: "#000", "stroke-width": 1.8 }, svg);
-    el("text", { x: sx(q) + 4, y: sy(pm) + 4, "font-size": 11, stroke: "#fff", "stroke-width": 3, "paint-order": "stroke" }, svg, "T/q = " + f(pm, 1));
     el("line", { x1: sx(q), y1: sy(0), x2: sx(q), y2: sy(Math.max(a - q, pm)), stroke: "#000", "stroke-dasharray": "3 3" }, svg);
   }
   // ejes
-  for (let t = 0; t <= xmax; t += 6) {
-    el("line", { x1: sx(t), y1: sy(0), x2: sx(t), y2: sy(0) + 4, stroke: "#333" }, svg);
-    el("text", { x: sx(t), y: sy(0) + 16, "font-size": 10, "text-anchor": "middle" }, svg, t);
+  for (let t = 0; t <= xmax; t += 1) {
+    const mayor = t % PASO === 0;
+    if (mayor && t > 0) el("line", { x1: sx(t), y1: sy(0), x2: sx(t), y2: sy(ymax), stroke: "#000", "stroke-opacity": 0.07 }, svg);
+    el("line", { x1: sx(t), y1: sy(0), x2: sx(t), y2: sy(0) + (mayor ? 5 : 2.5), stroke: "#333" }, svg);
+    if (mayor) el("text", { x: sx(t), y: sy(0) + 16, "font-size": 10, "text-anchor": "middle" }, svg, t);
   }
-  for (let t = 0; t <= ymax; t += 6) {
-    el("line", { x1: sx(0) - 4, y1: sy(t), x2: sx(0), y2: sy(t), stroke: "#333" }, svg);
-    el("text", { x: sx(0) - 7, y: sy(t) + 4, "font-size": 10, "text-anchor": "end" }, svg, t);
+  for (let t = 0; t <= ymax; t += 1) {
+    const mayor = t % PASO === 0;
+    if (mayor && t > 0) el("line", { x1: sx(0), y1: sy(t), x2: sx(xmax), y2: sy(t), stroke: "#000", "stroke-opacity": 0.07 }, svg);
+    el("line", { x1: sx(0) - (mayor ? 5 : 2.5), y1: sy(t), x2: sx(0), y2: sy(t), stroke: "#333" }, svg);
+    if (mayor) el("text", { x: sx(0) - 7, y: sy(t) + 4, "font-size": 10, "text-anchor": "end" }, svg, t);
   }
   el("line", { x1: sx(0), y1: sy(0), x2: sx(xmax), y2: sy(0), stroke: "#222", "stroke-width": 1.3 }, svg);
   el("line", { x1: sx(0), y1: sy(0), x2: sx(0), y2: sy(ymax), stroke: "#222", "stroke-width": 1.3 }, svg);
@@ -169,6 +206,24 @@ function dibujar(svg, a, q, T, colorDem, o = {}) {
   el("text", { x: sx(xmax) - 2, y: sy(c) - 4, "font-size": 11, "text-anchor": "end" }, svg, "c = " + c);
   if (otraDem) el("line", { x1: sx(0), y1: sy(otraDem), x2: sx(otraDem), y2: sy(0), stroke: "#B22222", "stroke-width": 1.5, "stroke-dasharray": "6 4" }, svg);
   el("line", { x1: sx(0), y1: sy(a), x2: sx(a), y2: sy(0), stroke: colorDem, "stroke-width": 2.2 }, svg);
+  // tamaño del área rosa (pérdida irrecuperable)
+  if (!o.sinRosa && !o.soloFranja && q !== qe) {
+    const rosa = Math.abs(qe - q) * Math.abs(a - q - c) / 2;
+    if (rosa > 0.5) el("text", { x: sx((2 * q + qe) / 3), y: sy((2 * c + (a - q)) / 3) + 4, "font-size": 12, "font-weight": 700, "text-anchor": "middle", fill: "#ad1457", stroke: "#fff", "stroke-width": 3.5, "paint-order": "stroke" }, svg, f(rosa, 1));
+  }
+  // tamaño del área azul y de la rayada
+  if (q > 0 && !o.soloFranja) {
+    const pm = T / q, x1 = Math.min(Math.max(a - pm, 0), q);
+    const azul = (a - pm) * x1 - x1 * x1 / 2, rayado = x1 < q ? (q - x1) * (pm - (a - q)) / 2 : 0;
+    const etiqueta = (x, y, texto, color) => el("text", { x: sx(x), y: sy(y) + 4, "font-size": 12, "font-weight": 700, "text-anchor": "middle", fill: color, stroke: "#fff", "stroke-width": 3.5, "paint-order": "stroke" }, svg, texto);
+    if (azul > 0.5) {
+      const tri = x1 < q;                      // triángulo completo o trapecio cortado en q
+      const cx = tri ? x1 / 3 : (x1 * (a - pm) / 2 - x1 * x1 / 3) / ((a - pm) - x1 / 2);
+      const cy = tri ? pm + (a - pm) / 3 : pm + (a - x1 / 2 - pm) / 2.4;
+      etiqueta(Math.max(cx, 1.6), cy, f(azul, 1), "#0d47a1");
+    }
+    if (rayado > 0.5) etiqueta((x1 + 2 * q) / 3, (2 * pm + (a - q)) / 3, f(rayado, 1), "#bf360c");
+  }
   // renta de información: franja entre las dos demandas hasta q, como en las láminas
   if (o.franja && otraDem && q > 0) {
     const qq = Math.min(q, a), d = a - otraDem, base = x => Math.max(otraDem - x, 0);
@@ -189,21 +244,36 @@ function dibujar(svg, a, q, T, colorDem, o = {}) {
 
 function cuentas(tabla, a, q, T, sinRosa) {
   const val = V(a, q), costo = P.c * q;
+  const pm = q > 0 ? T / q : 0, x1 = Math.min(Math.max(a - pm, 0), q);
+  const azul = (a - pm) * x1 - x1 * x1 / 2, rayado = x1 < q ? (q - x1) * (pm - (a - q)) / 2 : 0;
   tabla.innerHTML = q > 0
     ? `<tr><td>Valor del paquete V(${f(q)})</td><td>${f(val)}</td></tr>
        <tr><td>&nbsp;&nbsp;costo (gris)</td><td>${f(costo)}</td></tr>
        <tr><td>&nbsp;&nbsp;beneficio de la empresa (verde), T &minus; costo</td><td>${f(T - costo)}</td></tr>
-       <tr><td>&nbsp;&nbsp;excedente del consumidor (azul &minus; rayado), V &minus; T</td><td>${f(val - T)}</td></tr>
+       <tr><td>&nbsp;&nbsp;excedente del consumidor: azul &minus; rayado = ${f(azul, 1)} &minus; ${f(rayado, 1)}</td><td>${f(val - T)}</td></tr>
        ${sinRosa ? "" : `<tr><td>Pérdida irrecuperable (rosa)</td><td>${f(Math.abs(V(a, a - P.c) - P.c * (a - P.c) - (val - costo)))}</td></tr>`}`
     : `<tr><td>No compra nada: ni beneficio ni excedente.</td><td></td></tr>`;
 }
 
 function leer() { return { qB: +$("qB").value, TB: +$("TB").value, qA: +$("qA").value, TA: +$("TA").value }; }
-function poner(m) { $("qB").value = m.qB; $("TB").value = Math.round(m.TB); $("qA").value = m.qA; $("TA").value = Math.round(m.TA); render(); }
+function poner(m) { $("qB").value = m.qB; $("TB").value = m.TB; $("qA").value = m.qA; $("TA").value = m.TA; render(); }
+// Con la casilla activa, cada pago es el tope que acepta su comprador:
+// el bajo paga todo lo que le vale el chico; el alto, lo que le vale el grande menos la renta que le dejaría el chico.
+function pagosMaximos() {
+  const qB = +$("qB").value, qA = +$("qA").value, qb = Math.min(qB, P.aB);
+  const TB = V(P.aB, qb), renta = V(P.aA, qB) - TB;
+  $("TB").value = TB; $("TA").value = Math.max(V(P.aA, qA) - renta, 0);
+}
 
 function render() {
+  const auto = $("auto").checked;
+  $("TB").disabled = auto; $("TA").disabled = auto;
+  if (auto) pagosMaximos();
   const m = leer();
-  for (const k of ["qB", "TB", "qA", "TA"]) $("v" + k).textContent = f(m[k]);
+  $("vqB").textContent = f(m.qB) + " unidades"; $("vqA").textContent = f(m.qA) + " unidades";
+  $("vTB").textContent = f(m.TB) + " de pago"; $("vTA").textContent = f(m.TA) + " de pago";
+  const res = (q, T) => q > 0 ? "<b>" + f(q) + " unidades por " + f(T) + "</b> <span>(sale a " + f(T / q, 1) + " por unidad)</span>" : "<b>sin paquete</b> <span>(0 unidades)</span>";
+  $("rB").innerHTML = res(m.qB, m.TB); $("rA").innerHTML = res(m.qA, m.TA);
   const eB = elige(P.aB, m), eA = elige(P.aA, m);
   const nom = { nada: "no compra", chico: "compra el chico", grande: "compra el grande" };
   const paq = n => n === "chico" ? { q: m.qB, T: m.TB } : n === "grande" ? { q: m.qA, T: m.TA } : { q: 0, T: 0 };
@@ -225,12 +295,24 @@ function render() {
   const ref = (V(P.aA, P.aA - P.c) - P.c * (P.aA - P.c)) + (V(P.aB, P.aB - P.c) - P.c * (P.aB - P.c));
   const par = x => x < 0 ? `(${f(x)})` : f(x);
   $("ganancia").innerHTML = `Beneficio de la empresa = ${par(gB)} con el bajo + ${par(gA)} con el alto = ${f(gB + gA)}<br><span style="font-weight:400;font-size:14px">Si viera el tipo: ${f(ref)}</span>`;
-  const corto = { nada: "no compra", chico: "compra el chico", grande: "compra el grande" };
-  let t = `<b>Bajo:</b> ${corto[eB.b.n]}, excedente ${f(eB.b.s)}.<br>`;
-  if (eA.b.n === "chico") t += `<b>Alto:</b> se disfraza y compra el chico, excedente ${f(eA.b.s)} (el grande le dejaría ${f(sGrandeA)}).`;
-  else if (eA.b.n === "grande") t += `<b>Alto:</b> compra el grande, excedente ${f(eA.b.s)} (el chico le dejaría ${f(sChicoA)}).`;
-  else t += `<b>Alto:</b> no compra (el chico le dejaría ${f(sChicoA)} y el grande ${f(sGrandeA)}).`;
-  if (m.qA < m.qB) t += `<br><b>Ojo:</b> el paquete "grande" tiene menos unidades que el "chico".`;
+  const nombreOp = { nada: "No comprar", chico: "Paquete chico", grande: "Paquete grande" };
+  const maxAbs = Math.max(1, ...eA.ops.concat(eB.ops).map(o => Math.abs(o.s)));
+  const tablaDec = (titulo, clase, e) => {
+    let h = `<div class="dec ${clase}"><h3>${titulo}</h3><table>`;
+    for (const o of e.ops) {
+      const elegido = o.n === e.b.n;
+      const cuenta = o.n === "nada" ? "" : `${f(o.s + o.T)} &minus; ${f(o.T)}`;
+      h += `<tr class="${elegido ? "elegido" : ""}"><td>${nombreOp[o.n]}</td><td class="cuenta">${cuenta}</td>` +
+           `<td class="pista"><div style="width:${Math.abs(o.s) / maxAbs * 100}%;background:${o.s < 0 ? "#ef9a9a" : "#90caf9"}"></div></td>` +
+           `<td class="exc">${f(o.s)}</td><td class="marca">${elegido ? "&larr; elige" : ""}</td></tr>`;
+    }
+    return h + "</table></div>";
+  };
+  $("decision").innerHTML = tablaDec("Tipo bajo", "bajo", eB) + tablaDec("Tipo alto", "alto", eA);
+  let t = "";
+  if (eA.b.n === "chico") t += `El alto <b>se disfraza</b>: el paquete chico le deja más que el grande.`;
+  else if (eA.b.n === "grande" && Math.abs(sChicoA - sGrandeA) < 1e-9) t += `El alto está indiferente entre los dos paquetes y compra el grande.`;
+  if (m.qA < m.qB) t += ` <b>Ojo:</b> el paquete "grande" tiene menos unidades que el "chico".`;
   $("elige").innerHTML = t;
   // balance: a dónde va el beneficio máximo posible
   const gan = gB + gA, perd = ref - gan - eA.b.s - eB.b.s;
@@ -242,18 +324,12 @@ function render() {
 }
 
 for (const k of ["qB", "TB", "qA", "TA"]) $(k).addEventListener("input", render);
-document.querySelectorAll("[data-i]").forEach(b => b.addEventListener("click", () => poner(intento(+b.dataset.i))));
-$("ejer").addEventListener("click", () => {
-  const deck = P.aA === 30;
-  P = deck ? { aA: 20, aB: 16, c: 4 } : { aA: 30, aB: 24, c: 6 };
-  $("ejer").textContent = deck ? "Números del deck" : "Números del ejercicio en clase";
-  document.querySelector("header p").innerHTML = `Un consumidor de cada tipo. Alto: p = ${P.aA} &minus; q. Bajo: p = ${P.aB} &minus; q. Costo marginal c = ${P.c}. La empresa ofrece dos paquetes (q unidades por un pago total T) y cada consumidor elige. EC2005B Competencia Económica.`;
-  const Tmax = Math.ceil(V(P.aA, P.aA));
-  for (const k of ["qB", "qA"]) $(k).max = P.aA;
-  for (const k of ["TB", "TA"]) $(k).max = Tmax;
-  poner(intento(3));
-});
-render();
+document.querySelectorAll("[data-i]").forEach(b => b.addEventListener("click", () => { $("auto").checked = false; poner(intento(+b.dataset.i)); }));
+$("auto").addEventListener("change", render);
+// límites de los controles y menú inicial según los parámetros
+for (const k of ["qB", "qA"]) $(k).max = P.aA;
+for (const k of ["TB", "TA"]) { $(k).max = Math.ceil(V(P.aA, P.aA)); $(k).step = 0.5; }
+poner(intento(3));
 </script>
 </body>
 </html>
